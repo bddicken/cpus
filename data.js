@@ -5,7 +5,7 @@ const CPUs = [
     clockSpeed: '3.2 GHz',
     url: 'https://en.wikipedia.org/wiki/List_of_AMD_Athlon_processors',
     image: './m1.png',
-    hz: 32000000000,
+    hz: 3200000000,
     class: 'm1',
   },
   {
@@ -14,7 +14,7 @@ const CPUs = [
     clockSpeed: '3.3 GHz',
     url: 'https://en.wikipedia.org/wiki/List_of_Intel_Core_processors',
     image: './i52500k.png',
-    hz: 33000000000,
+    hz: 3300000000,
     class: 'inteli5',
   },
   {

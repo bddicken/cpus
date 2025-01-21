@@ -69,7 +69,7 @@
     <h1>CPUs</h1>
     <br/>
     <div class="slidecontainer">
-      <input type="range" min="13" max="4731" value="500" step="1" class="slider" id="slowdown">
+      <input type="range" min="7" max="2000" value="10" step="1" class="slider" id="slowdown">
       <p>Slowdown: <span id="slideOut"></span>x</p>
     </div>
     <div id="cpus" style="max-width: 700px;"></div>
@@ -153,9 +153,10 @@ var slider = document.getElementById("slowdown");
 var slideOut = document.getElementById("slideOut");
 slideOut.innerHTML = slider.value;
 function updateSpeed() {
-  const mul = Math.pow(slider.value, 3);
-  lv.timeline.timeScale(1/(mul/scale));
-  slideOut.innerHTML = mul;
+  const sv = Math.pow(slider.value, 3);
+  const mul = 1000000 / sv; 
+  lv.timeline.timeScale(mul);
+  slideOut.innerHTML = Math.floor(scale / mul);
 }
 slider.oninput = updateSpeed;
 
