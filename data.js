@@ -72,16 +72,6 @@ const CPUs = [
     class: 'intel4004',
   },
   {
-    year: '1965',
-    model: 'IBM System/360',
-    clockSpeed: '345 KHz',
-    url: 'https://en.wikipedia.org/wiki/IBM_System/360',
-    image: './360.png',
-    /* TODO: confirm this, or drop? */
-    hz: 345000,
-    class: 'ibm360',
-  },
-  {
     year: '1954',
     model: 'IBM 650',
     clockSpeed: '125 KHz',
