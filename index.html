@@ -1,0 +1,336 @@
+<html>
+<head>
+  <script src="./gsap.min.js"></script>
+  <script src="./data.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Inter, Arial;
+      padding: 20px;
+      margin: 0px;
+      word-wrap: break-word;
+      text-align: justify;
+    }
+    h1 {
+      text-align: center;
+      font-size: 4em;
+      margin-top: 0.125em;
+      margin-bottom: 0.125em;
+    }
+    pre {
+      border: 1px solid black;
+      margin-top: 25px;
+      margin-bottom: 25px;
+      overflow-x: scroll;
+      white-space: pre;
+      padding: 20px;
+      border: solid 1px black;
+    }
+    .slidecontainer {
+      width: 100%;
+    }
+    .slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 15px;
+      border-radius: 5px;
+      background: #d3d3d3;
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+    .slider:hover {
+      opacity: 1;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: black;
+      cursor: pointer;
+    }
+    .slider::-moz-range-thumb {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: black;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div style="max-width: 700px; margin-left: auto; margin-right: auto;">
+    <br/>
+    <h1>CPUs</h1>
+    <br/>
+    <div class="slidecontainer">
+      <input type="range" min="13" max="4731" value="500" step="1" class="slider" id="slowdown">
+      <p>Slowdown: <span id="slideOut"></span>x</p>
+    </div>
+    <div id="cpus" style="max-width: 700px;"></div>
+    <br/>
+    <br/>
+    <br/>
+    <h2>A long history of CPUs</h2>
+    <p>
+    This is a small sampling of some of the iconic CPUs released over the years.
+    The oscillating circles are used to show the relative cycle time of the CPUs.
+    Use the exponential-scale slider to change the amount of slowdown.
+    I hope you enjoy!
+    </p>
+    <p>
+    Missing your favorite CPU?
+    Go make a PR
+    <a href="">
+    on GitHub</a>
+    to get it added in for the next version.
+    </p>
+    <h2>Well actually...</h2>
+    <p>
+    This is meant to be a fun CPU comparison that provides a broad, historic overview of how CPU speed has progressed over time, and it's quite impressive!
+    Even so, there's a number of "gotchas" people may point out with how the comparison is being made.
+    I get it - comparing things like this can be tricky.
+    I'll point out a few caveats here for the sake of general awareness.
+    There's probably others, but a few things to consider:
+    </p>
+    <h3>Clock speed != instructions per second.</h3>
+    <p>
+    Measuring the speed of a processor purely by it's clock speed is nowhere near the whole picture.
+    One of of several reasons for this is that not all instructions execute in the same amount of time.
+    In addition, not all systems support the same types of instructions.
+    Therefore, it's possible for a CPU with a slower clock speed to perform faster than another system with a higher clock speed but a less robust instruction set.
+    </p>
+    <p>
+    As en extreme example of this, consider that the ENIAC ran at a clocl speed of
+    <a href="https://www.cs.kent.edu/~rothstei/10051/HistoryPt4.htm#:~:text=ENIAC's%20basic%20clock%20speed%20was,of%201%2C000%2C000%2C000%20cycles%20per%20second." />
+    100,000 cycles per second</a>
+    but this only translated to about 
+    <a href="https://penntoday.upenn.edu/news/worlds-first-general-purpose-computer-turns-75#:~:text=Presper%20Eckert%2C%20ENIAC%20was%20the,each%20new%20set%20of%20calculations." >
+    5,000 instructions per second<a>.
+    This mean it took approximately 20 clock cycles per "instruction" to execute.
+    Compare that to modern machines, where an ADD instruction typically takes anywhere from 1 to 4 cycles.
+    </p>
+    <h3>Parallelism</h3>
+    <p>
+    The rate pf increase in raw, straight-line speed of CPUs has slowed significantly in the past 15 years or so.
+    Much of this is due to physical limitations.
+    Much of how CPUs have gotten better over the past 2 decades has not been through clock speed improvements, but through increased parallelism.
+    In the early 200s, basically all consumer CPUs were single-core machines.
+    Nowadays, most computers being release have at least 4 cores, if not 8, 12, or 16.
+    Some companies, such as Intel
+    </a>
+    offer CPUs with over
+    <a href="https://www.intel.com/content/www/us/en/products/sku/240777/intel-xeon-6980p-processor-504m-cache-2-00-ghz/specifications.html">
+    over 100 cores</a>.
+    </p>
+    <h3>Other factors</h3>
+    <p>
+    Beyond what was already mentioned, there's many other factors that play a part in practical CPU performance.
+    Factors like cache sizes and latencies (L1, L2, L3), RISC vs CISC instruction sets, instruction bit width (8, 16, 32, 64), and many other play a part.
+    </p>
+    </br>
+    <p>
+    Made by
+    <a href="http://benjdd.com">
+    Ben</a>
+    </p>
+    </br>
+    </br>
+    </br>
+  </div>
+</body>
+
+<script>
+
+const scale = 1000000;
+
+var slider = document.getElementById("slowdown");
+var slideOut = document.getElementById("slideOut");
+slideOut.innerHTML = slider.value;
+function updateSpeed() {
+  const mul = Math.pow(slider.value, 3);
+  lv.timeline.timeScale(1/(mul/scale));
+  slideOut.innerHTML = mul;
+}
+slider.oninput = updateSpeed;
+
+let globalIDSequence = 1;
+
+class LatencyVisual {
+
+  constructor(id, timings, speed) {
+   
+    this.timings = timings;
+
+    for (const timing of timings) {
+      timing.class = id + '-' + timing.class;
+    }
+
+    this.width = 1000;
+    this.height = 40 + timings.length * 100;
+    this.pallette = [
+      '#33658a',
+      '#86bbd8',
+      '#758e4f',
+      '#f6ae2d',
+      '#f26419',
+    ];
+    this.palletteIndex = 0;
+
+    this.id = id;
+    this.dom = document.getElementById(this.id);
+    this.initializeBaseElements();
+    this.domSVG = this.dom.getElementsByClassName('latencySVG')[0];
+    
+    this.drawBox(`background-${globalIDSequence++}`, 0, 0, this.width, this.height, '#eee', '#eee');
+    this.updateSizes();
+   
+    this.timeline = gsap.timeline({repeat: -1, yoyo: true});
+    this.timeline.pause();
+    
+    let i = 0;
+    for (const t of this.timings) {
+      this.draw(this.timeline, 25 + i * 100, 100, t);
+      i++;
+    }
+
+    setTimeout(() => this.timeline.play(), 500);
+  }
+
+  getNextColor() {
+    this.palletteIndex = (this.palletteIndex + 1) % this.pallette.length;
+    return this.pallette[this.palletteIndex];
+  }
+
+  initializeBaseElements() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`)
+    svg.setAttribute('id', `${this.id}SVG`)
+    const outer = document.getElementById(this.id);
+    outer.appendChild(svg);
+    this.dom = svg;
+    gsap.set(`#${this.id}SVG`, {width: '100%', backgroundColor: '#00000000'});
+  }
+  
+  updateSizes() {
+    let spacing = (this.height / (this.timings.length+1))
+    let i = 0;
+    for (let timing of this.timings) {
+      i++;
+      timing.y = spacing * i;
+      timing.prevT = 0;
+      timing.forward = true;
+      timing.end = this.EX;
+    }
+  }
+
+  addLabel(id, labels, textSize, xp, yp, w, h, color, fontWeight='bold', url=undefined) {
+    textSize = Math.floor(textSize);
+   
+    let container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    container.setAttribute('id', `${id}`);
+    this.dom.appendChild(container);
+
+    if (url) {
+      const a = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+      a.setAttribute('id', `${id}-a`);
+      a.setAttribute('href', url);
+      container.appendChild(a);
+      gsap.set(`#${id}-a`, {cursor: 'pointer'});
+      container = a;
+    }
+
+    let i = 0;
+    for (const string of labels) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      container.appendChild(text);
+      text.setAttribute('id', `${id}Label${i}`);
+      text.setAttribute('dominant-baseline', 'hanging');
+      text.style.fontFamily = 'monospace';
+      text.innerHTML = string;
+      gsap.set(`#${text.id}`, {
+        x: xp, y: yp,
+        fill: color,
+        fontSize: Math.floor(textSize),
+        fontWeight: fontWeight,
+        userSelect: 'none',
+      });
+      i++;
+    }
+  }
+  
+  draw(timeline, y, h, info) {
+    const outerVGap = 50;
+    const outerHGap = 25;
+    const width = this.width;
+    const height = h;
+    const innerGap = 500;
+   
+    this.drawBox(`box-${globalIDSequence++}`, 120, y, 280, h - 10, '#444', '#444');
+    this.drawImage(10, y, h, h-10, './img/' + info.image);
+    this.addLabel(`label-${globalIDSequence++}`, 
+      [info.year], 20,
+      140, y + 50, 70, 40,
+      '#bbb', '400');
+    this.addLabel(`label-${globalIDSequence++}`, 
+      [info.clockSpeed], 20,
+      200, y + 50, 70, 40,
+      '#bbb', '400');
+    this.addLabel(`label-${globalIDSequence++}`, 
+      [info.model], 25,
+      140, y + 20, 280, h,
+      'white', 'bold', info.url);
+    const ballId = `ball-${globalIDSequence++}`;
+    const ball = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    this.dom.appendChild(ball);
+    ball.setAttribute('id', `${ballId}`);
+    gsap.set(`#${ballId}`, {
+      attr: {cx: 450, cy: y + 45, rx: 50, ry: 50},
+      fill: this.getNextColor(),
+      fontWeight: 'bold',
+      filter: 'drop-shadow(0px 2px 4px #00000050)',
+      userSelect: 'none',
+    });
+    timeline.to(`#${ballId}`, { attr: {cx: 450 + innerGap}, ease: 'none', duration: (scale / info.hz), stagger: {repeat: -1, yoyo: true}}, '<')
+  }
+  
+  drawImage(xu, yu, w, h, src) {
+    const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    image.setAttribute('id', `image-${globalIDSequence++}`);
+    this.dom.appendChild(image);
+    gsap.set(`#${image.id}`, {
+      width: w, height: h,
+      attr: {href: src},
+      filter: 'drop-shadow(0px 2px 4px #00000025)',
+      x: xu, y: yu,
+    });
+    return image;
+  }
+  
+  drawBox(id, xu, yu, w, h, color, bgColor) {
+    const box = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    box.setAttribute('id', id);
+    this.dom.appendChild(box);
+    gsap.set(`#${id}`, {
+      width: w, height: h,
+      fill: bgColor,
+      stroke: color,
+      filter: 'drop-shadow(0px 2px 4px #00000025)',
+      strokeWidth: 0,
+      x: xu, y: yu,
+    });
+    return box;
+  }
+
+}
+
+const lv = new LatencyVisual('cpus', CPUs, 1000);
+updateSpeed();
+</script>
+
+</html>
