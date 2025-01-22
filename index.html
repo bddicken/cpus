@@ -157,6 +157,7 @@ function updateSpeed() {
   const mul = 1000000 / sv; 
   lv.timeline.timeScale(mul);
   slideOut.innerHTML = Math.floor(scale / mul);
+  lv.updateTimes(scale / mul);
 }
 slider.oninput = updateSpeed;
 
@@ -230,11 +231,51 @@ class LatencyVisual {
     }
   }
 
-  addLabel(id, labels, textSize, xp, yp, w, h, color, fontWeight='bold', url=undefined) {
+  updateTimes(scaler) {
+    for (const cpu of CPUs) {
+      console.log(cpu)
+      const l = document.getElementById(`time-${this.replaceSpaces(cpu.model)}`);
+      l.textContent = this.formatTimespan(scaler / cpu.hz)
+    }
+  }
+
+  replaceSpaces(str) {
+    return str.replaceAll(' ', '-');
+  }
+
+  formatTimespan(seconds) {
+    const timeUnits = [
+      { unit: 'ns', seconds: 1e-9, threshold: 1e-6 },
+      { unit: 'μs', seconds: 1e-6, threshold: 1e-3 },
+      { unit: 'ms', seconds: 1e-3, threshold: 1 },
+      { unit: 's', seconds: 1, threshold: 60 },
+      { unit: 'm', seconds: 60, threshold: 3600 },
+      { unit: 'h', seconds: 3600, threshold: 86400 },
+      { unit: 'd', seconds: 86400, threshold: 604800 },
+      { unit: 'w', seconds: 604800, threshold: 2629746 }, // Average month in seconds
+      { unit: 'm', seconds: 2629746, threshold: 31556952 }, // Average year in seconds
+      { unit: 'y', seconds: 31556952, threshold: Infinity }
+    ];
+    if (seconds === 0) {
+      return "0 seconds";
+    }
+    let unit = timeUnits[0];
+    for (let i = 0; i < timeUnits.length; i++) {
+      if (Math.abs(seconds) < timeUnits[i].threshold) {
+        unit = timeUnits[i];
+        break;
+      }
+    }
+    const value = seconds / unit.seconds;
+    const roundedValue = Math.abs(value) < 1 ? value.toPrecision(3) : Math.round(value);
+    return `${roundedValue}${unit.unit}`;
+  }
+
+  addLabel(id, label, textSize, xp, yp, w, h, color, fontWeight='bold', url=undefined) {
     textSize = Math.floor(textSize);
    
     let container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    container.setAttribute('id', `${id}`);
+    container.setAttribute('id', `${id}-c`);
     this.dom.appendChild(container);
 
     if (url) {
@@ -246,23 +287,20 @@ class LatencyVisual {
       container = a;
     }
 
-    let i = 0;
-    for (const string of labels) {
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      container.appendChild(text);
-      text.setAttribute('id', `${id}Label${i}`);
-      text.setAttribute('dominant-baseline', 'hanging');
-      text.style.fontFamily = 'monospace';
-      text.innerHTML = string;
-      gsap.set(`#${text.id}`, {
-        x: xp, y: yp,
-        fill: color,
-        fontSize: Math.floor(textSize),
-        fontWeight: fontWeight,
-        userSelect: 'none',
-      });
-      i++;
-    }
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    container.appendChild(text);
+    text.setAttribute('id', `${id}`);
+    text.setAttribute('dominant-baseline', 'hanging');
+    text.style.fontFamily = 'monospace';
+    text.innerHTML = label;
+    console.log(`#${id}`);
+    gsap.set(`#${id}`, {
+      x: xp, y: yp,
+      fill: color,
+      fontSize: Math.floor(textSize),
+      fontWeight: fontWeight,
+      userSelect: 'none',
+    });
   }
   
   draw(timeline, y, h, info) {
@@ -274,11 +312,15 @@ class LatencyVisual {
    
     this.drawBox(`box-${globalIDSequence++}`, 120, y, 280, h - 10, '#444', '#444');
     this.drawImage(10, y, h, h-10, './img/' + info.image);
-    this.addLabel(`label-${globalIDSequence++}`, 
+    this.addLabel(`time-${this.replaceSpaces(info.model)}`,
+      'hiiiiiiiii', 20,
+      410, y + 40, 70, 40,
+      'rgb(170, 170, 170)', '400');
+    this.addLabel(`year-${globalIDSequence++}`, 
       [info.year], 20,
       140, y + 50, 70, 40,
       '#bbb', '400');
-    this.addLabel(`label-${globalIDSequence++}`, 
+    this.addLabel(`speed-${globalIDSequence++}`, 
       [info.clockSpeed], 20,
       200, y + 50, 70, 40,
       '#bbb', '400');
