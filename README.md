@@ -1,6 +1,6 @@
 # CPUs
 
-Visualizing the speed of CPUs over time.
+Visualizing the speed of CPUs throughout history.
 
 ## Adding another CPU
 
