@@ -63,6 +63,15 @@ const CPUs = [
     class: 'intel8086',
   },
   {
+    year: '1975',
+    model: 'MOS 6502',
+    clockSpeed: '1 MHz', /* Range listed as 1-3 MHz, but 1 seemed most common */
+    url: 'https://en.wikipedia.org/wiki/MOS_Technology_6502',
+    image: './6502.png',
+    hz: 1000000,
+    class: 'mos6502',
+  },
+  {
     year: '1971',
     model: 'Intel 4004',
     clockSpeed: '740 KHz',
