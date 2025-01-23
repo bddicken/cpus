@@ -9,6 +9,15 @@ const CPUs = [
     class: 'm1',
   },
   {
+    year: '2017',
+    model: 'Intel i7 7700k',
+    clockSpeed: '4.2GHz',
+    url: 'https://www.intel.com/content/www/us/en/products/sku/97129/intel-core-i77700k-processor-8m-cache-up-to-4-50-ghz/specifications.html',
+    image: './i77700k.png',
+    hz: 4200000000,
+    class: 'inteli7',
+  },
+  {
     year: '2011',
     model: 'Intel i5 2500k',
     clockSpeed: '3.3 GHz',
